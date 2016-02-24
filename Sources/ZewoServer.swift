@@ -2,16 +2,16 @@ import HTTPServer
 import Vapor
 
 public class ZewoServer: Vapor.ServerDriver {
-    var delegate: Vapor.ServerDriverDelegate?
+    public var delegate: Vapor.ServerDriverDelegate?
     var server: HTTPServer.Server!
 
-    func boot(port port: Int) throws {
+    public func boot(port port: Int) throws {
         self.server = try Server(port: port, responder: self)
         try server.start()
     }
 
-    func halt() {
-
+    public func halt() {
+        //implement me
     }
 }
 
@@ -50,7 +50,7 @@ extension Vapor.Response {
 
 extension ZewoServer: HTTP.ResponderType {
 
-    func respond(request: HTTP.Request) throws -> HTTP.Response {
+    public func respond(request: HTTP.Request) throws -> HTTP.Response {
         //convert to Vapor request
         var path = request.uri.path ?? "/"
 
