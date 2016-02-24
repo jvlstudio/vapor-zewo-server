@@ -1,7 +1,7 @@
 import HTTPServer
 import Vapor
 
-class ZewoServer: Vapor.ServerDriver {
+public class ZewoServer: Vapor.ServerDriver {
     var delegate: Vapor.ServerDriverDelegate?
     var server: HTTPServer.Server!
 
@@ -94,7 +94,7 @@ extension ZewoServer: HTTP.ResponderType {
 
             return response
         } else {
-            Log.warning("not found")    
+            Log.error("Request not handled")    
             return Response()
         }
 
