@@ -15,19 +15,78 @@ class ZewoServer: Vapor.ServerDriver {
     }
 }
 
+extension HTTP.Method {
+
+    ///Converts an HTTP.Method to a Vaopr.Request.Method
+    var vaporValue: Vapor.Request.Method {
+        switch self {
+            case .GET:
+                return .Get
+            case .POST:
+                return .Post
+            case .PUT:
+                return .Put
+            case .PATCH:
+                return .Patch
+            case .DELETE:
+                return .Delete
+            case .OPTIONS:
+                return .Options
+            default:
+                return .Unknown
+        }
+    }
+
+}
+
+extension Vapor.Response {
+
+    ///Converts an Vapor.Response.Status to an HTTP.Status
+    var zewoStatus: HTTP.Status {
+        return .Raw(statusCode: self.status.code, reasonPhrase: self.reasonPhrase)
+    }
+
+}
+
 extension ZewoServer: HTTP.ResponderType {
 
     func respond(request: HTTP.Request) throws -> HTTP.Response {
         //convert to Vapor request
-        let path = request.uri.path ?? "/"
-        let vaporRequest = Vapor.Request.init(method: .Get, path: path, address: nil, headers: [:], body: [])
+        var path = request.uri.path ?? "/"
+
+        //convert path params
+        if request.query.count > 0 {
+            path += "?"
+            for (key, value) in request.query {
+                path += "\(key)=\(value)"
+            }
+        }
+
+        let method = request.method.vaporValue
+
+        //transfer headers
+        var headers: [String: String] = [:]
+        for (key, header) in request.headers {
+            headers["\(key)"] = header
+        }
+
+        //convert buffer to [UInt8] array
+        let data: [UInt8]
+        switch request.body {
+            case .Buffer(let body):
+                data = [UInt8](body)
+            default:
+                data = []
+        }
+
+        let vaporRequest = Vapor.Request.init(method: method, path: path, address: nil, headers: headers, body: data)
 
         //convert to Zewo response
         if let vaporResponse = self.delegate?.serverDriverDidReceiveRequest(vaporRequest) {
             let data: Data = Data(vaporResponse.data)
             var response = Response(body: data)
 
-            response.status = .OK
+            response.status = vaporResponse.zewoStatus
 
             for (key, value) in vaporResponse.headers {
                 response.headers[CaseInsensitiveKey(key)] = value
