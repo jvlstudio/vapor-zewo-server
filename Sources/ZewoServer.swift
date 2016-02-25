@@ -43,7 +43,7 @@ extension Vapor.Response {
 
     ///Converts an Vapor.Response.Status to an HTTP.Status
     var zewoStatus: HTTP.Status {
-        return .Raw(statusCode: self.status.code, reasonPhrase: self.reasonPhrase)
+        return .Raw(statusCode: self.status.code, reasonPhrase: self.status.reasonPhrase)
     }
 
 }
@@ -94,7 +94,7 @@ extension ZewoServer: HTTP.ResponderType {
 
             return response
         } else {
-            Log.error("Request not handled")    
+            Log.error("No delegate set on ZewoServer. Set delegate to Vapor.Application")    
             return Response()
         }
 
